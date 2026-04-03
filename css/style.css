@@ -66,14 +66,16 @@ body {
   flex-wrap: wrap;
 }
 
-.lang-toggle {
+.lang-toggle,
+.voice-toggle {
   display: flex;
   border: 2px solid var(--parchment);
   border-radius: 20px;
   overflow: hidden;
 }
 
-.lang-toggle button {
+.lang-toggle button,
+.voice-toggle button {
   background: transparent;
   border: none;
   color: var(--parchment);
@@ -86,7 +88,8 @@ body {
   transition: background 0.2s, color 0.2s;
 }
 
-.lang-toggle button.active {
+.lang-toggle button.active,
+.voice-toggle button.active {
   background: var(--parchment);
   color: var(--brown-dark);
 }

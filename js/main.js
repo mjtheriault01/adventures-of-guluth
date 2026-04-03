@@ -97,10 +97,20 @@ const translations = {
 
 // ---- STATE ----
 let currentLang = 'en';
+let currentGender = 'female';
 let synth = window.speechSynthesis;
 let utterance = null;
 let isPlaying = false;
 let isPaused = false;
+
+// ---- GENDER TOGGLE ----
+function setGender(gender) {
+  currentGender = gender;
+  document.querySelectorAll('.voice-toggle button').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-gender') === gender);
+  });
+  stopReading();
+}
 
 // ---- LANGUAGE TOGGLE ----
 function setLanguage(lang) {
@@ -144,17 +154,50 @@ function startReading() {
   stopReading();
 
   utterance = new SpeechSynthesisUtterance(getStoryText());
-  utterance.lang = currentLang === 'es' ? 'es-ES' : 'en-US';
-  utterance.rate = 0.92;
-  utterance.pitch = 1.05;
+  utterance.lang = currentLang === 'es' ? 'es-US' : 'en-US';
+  utterance.rate = 0.9;
+  utterance.pitch = 1.0;
 
-  // Try to pick a pleasant voice
+  // Preferred Natural voices by language + gender (Windows/Edge high-quality voices)
+  const voicePrefs = {
+    en: {
+      female: ['Aria', 'Jenny', 'Michelle', 'Ana', 'Samantha', 'Karen', 'Zira'],
+      male:   ['Guy', 'Davis', 'Andrew', 'Tony', 'Daniel', 'Alex', 'Mark']
+    },
+    es: {
+      female: ['Elvira', 'Paulina', 'Dalia', 'Sabina', 'Penelope'],
+      male:   ['Alvaro', 'Jorge', 'Raul', 'Pablo', 'Juan']
+    }
+  };
+
   const voices = synth.getVoices();
-  const preferred = voices.find(v =>
-    currentLang === 'es'
-      ? v.lang.startsWith('es') && v.name.toLowerCase().includes('female')
-      : v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Daniel'))
-  ) || voices.find(v => v.lang.startsWith(currentLang));
+  const langCode = currentLang === 'es' ? 'es' : 'en';
+  const preferred_names = voicePrefs[langCode][currentGender];
+
+  // 1. Try to find a Natural/Online voice matching gender preference
+  let preferred = null;
+  for (const name of preferred_names) {
+    preferred = voices.find(v =>
+      v.lang.startsWith(langCode) &&
+      v.name.includes(name) &&
+      (v.name.includes('Natural') || v.name.includes('Online') || v.localService === false)
+    );
+    if (preferred) break;
+  }
+
+  // 2. Fall back to any voice matching the name
+  if (!preferred) {
+    for (const name of preferred_names) {
+      preferred = voices.find(v => v.lang.startsWith(langCode) && v.name.includes(name));
+      if (preferred) break;
+    }
+  }
+
+  // 3. Fall back to any voice for the language
+  if (!preferred) {
+    preferred = voices.find(v => v.lang.startsWith(langCode));
+  }
+
   if (preferred) utterance.voice = preferred;
 
   utterance.onend = () => resetReadBtn();
@@ -227,6 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Language buttons
   document.querySelectorAll('.lang-toggle button').forEach(btn => {
     btn.addEventListener('click', () => setLanguage(btn.getAttribute('data-lang')));
+  });
+
+  // Gender buttons
+  document.querySelectorAll('.voice-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => setGender(btn.getAttribute('data-gender')));
   });
 
   // Read aloud button

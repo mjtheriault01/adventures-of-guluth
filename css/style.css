@@ -1,0 +1,459 @@
+/* ============================================
+   THE ADVENTURES OF GULUTH
+   Warm storybook styles
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+
+:root {
+  --cream: #fdf6e3;
+  --parchment: #f5e6c8;
+  --brown-dark: #3e2008;
+  --brown-mid: #7a4a1e;
+  --brown-light: #b07842;
+  --orange-warm: #c96a2a;
+  --purple: #7c4fa0;
+  --purple-light: #e8d8f5;
+  --shadow: rgba(62, 32, 8, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--brown-dark);
+  font-family: 'Lato', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+/* ---- HEADER ---- */
+.site-header {
+  background: var(--brown-dark);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.site-header .logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: var(--parchment);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+}
+
+.site-header .logo span {
+  color: #c9a0e8;
+}
+
+/* ---- CONTROLS BAR (lang + read-aloud) ---- */
+.controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lang-toggle {
+  display: flex;
+  border: 2px solid var(--parchment);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.lang-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--parchment);
+  padding: 5px 14px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lang-toggle button.active {
+  background: var(--parchment);
+  color: var(--brown-dark);
+}
+
+.read-aloud-btn {
+  background: var(--purple);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 18px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.read-aloud-btn:hover {
+  background: #5e3680;
+}
+
+.read-aloud-btn:active {
+  transform: scale(0.97);
+}
+
+.read-aloud-btn .icon {
+  font-size: 1rem;
+}
+
+.read-aloud-btn.playing {
+  background: var(--orange-warm);
+}
+
+/* ---- STORY HERO ---- */
+.story-hero {
+  position: relative;
+  width: 100%;
+}
+
+.story-hero img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.story-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(32, 12, 2, 0.85));
+  padding: 40px 48px 36px;
+}
+
+.story-label {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #c9a0e8;
+  margin-bottom: 8px;
+}
+
+.story-hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+  color: var(--cream);
+  line-height: 1.2;
+}
+
+/* ---- STORY BODY ---- */
+.story-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.story-section {
+  margin-bottom: 36px;
+}
+
+.story-section p {
+  font-family: 'Lato', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: var(--brown-dark);
+  margin-bottom: 20px;
+}
+
+.story-section p em {
+  font-style: italic;
+  color: var(--brown-mid);
+}
+
+.story-section p strong {
+  font-weight: 700;
+}
+
+/* ---- STORY IMAGES ---- */
+.story-image {
+  margin: 36px 0;
+  text-align: center;
+}
+
+.story-image img {
+  max-width: 100%;
+  width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 6px 28px var(--shadow);
+  border: 4px solid var(--parchment);
+}
+
+/* ---- DAD'S QUESTION ---- */
+.dads-question {
+  background: var(--purple-light);
+  border-left: 5px solid var(--purple);
+  border-radius: 0 12px 12px 0;
+  padding: 20px 24px;
+  margin: 36px 0;
+}
+
+.dads-question .dq-label {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 8px;
+}
+
+.dads-question p {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--brown-dark);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ---- DIALOGUE ---- */
+.dialogue {
+  padding-left: 20px;
+  border-left: 3px solid var(--parchment);
+  margin: 16px 0;
+  color: var(--brown-mid);
+}
+
+/* ---- THE END ---- */
+.story-end {
+  text-align: center;
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 2px solid var(--parchment);
+}
+
+.story-end .end-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-style: italic;
+  color: var(--brown-mid);
+}
+
+.story-end .purple-dot {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: var(--purple);
+  border-radius: 50%;
+  margin: 20px auto 0;
+}
+
+/* ---- NAVIGATION ---- */
+.story-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+  gap: 16px;
+}
+
+.story-nav a,
+.story-nav button {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--brown-mid);
+  text-decoration: none;
+  background: none;
+  border: 2px solid var(--parchment);
+  border-radius: 24px;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.story-nav a:hover,
+.story-nav button:hover {
+  background: var(--parchment);
+  color: var(--brown-dark);
+  border-color: var(--brown-light);
+}
+
+/* ---- FOOTER ---- */
+.site-footer {
+  background: var(--brown-dark);
+  color: var(--parchment);
+  text-align: center;
+  padding: 28px 24px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.site-footer a {
+  color: #c9a0e8;
+  text-decoration: none;
+}
+
+/* ============================================
+   INDEX / LANDING PAGE
+   ============================================ */
+
+.collection-hero {
+  background: var(--brown-dark);
+  text-align: center;
+  padding: 80px 24px 64px;
+  position: relative;
+  overflow: hidden;
+}
+
+.collection-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #5e2a08 0%, #1a0900 100%);
+  opacity: 0.6;
+}
+
+.collection-hero > * {
+  position: relative;
+}
+
+.collection-hero .hero-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #c9a0e8;
+  margin-bottom: 16px;
+}
+
+.collection-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+  color: var(--cream);
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.collection-hero .tagline {
+  font-size: 1.05rem;
+  color: var(--parchment);
+  max-width: 520px;
+  margin: 0 auto;
+  opacity: 0.85;
+  line-height: 1.7;
+}
+
+.purple-spot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: var(--purple);
+  border-radius: 50%;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+.stories-grid {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+.story-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: block;
+}
+
+.story-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 32px var(--shadow);
+}
+
+.story-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.story-card-body {
+  padding: 20px 22px 24px;
+}
+
+.story-card-body .card-number {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 6px;
+}
+
+.story-card-body h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  color: var(--brown-dark);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.story-card-body p {
+  font-size: 0.9rem;
+  color: var(--brown-mid);
+  line-height: 1.6;
+}
+
+.story-card.coming-soon {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: default;
+}
+
+.story-card.coming-soon .story-card-body .card-number {
+  color: var(--brown-light);
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 600px) {
+  .story-hero-overlay {
+    padding: 24px 20px 20px;
+  }
+
+  .story-container {
+    padding: 32px 16px 60px;
+  }
+
+  .story-nav {
+    padding: 0 16px 48px;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}

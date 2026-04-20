@@ -316,27 +316,70 @@ body {
 }
 
 /* ============================================
+   HERO SLIDESHOW — Ken Burns
+   ============================================ */
+
+.hero-slideshow {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  overflow: hidden;
+  background: var(--brown-dark);
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.4s ease-in-out;
+}
+
+.hero-slide.active {
+  opacity: 1;
+}
+
+/* Ken Burns keyframes — three directions for variety */
+@keyframes kb-zoom-in-left {
+  from { transform: scale(1.0) translate(0, 0); }
+  to   { transform: scale(1.12) translate(-2%, 1%); }
+}
+
+@keyframes kb-zoom-in-right {
+  from { transform: scale(1.0) translate(0, 0); }
+  to   { transform: scale(1.12) translate(2%, -1%); }
+}
+
+@keyframes kb-zoom-in-center {
+  from { transform: scale(1.0); }
+  to   { transform: scale(1.1); }
+}
+
+.hero-slide.active[data-kb="zoom-in-left"] {
+  animation: kb-zoom-in-left 7s ease-out forwards;
+}
+
+.hero-slide.active[data-kb="zoom-in-right"] {
+  animation: kb-zoom-in-right 7s ease-out forwards;
+}
+
+.hero-slide.active[data-kb="zoom-in-center"] {
+  animation: kb-zoom-in-center 7s ease-out forwards;
+}
+
+@media (max-width: 600px) {
+  .hero-slideshow { height: 240px; }
+}
+
+/* ============================================
    INDEX / LANDING PAGE
    ============================================ */
 
 .collection-hero {
   background: var(--brown-dark);
   text-align: center;
-  padding: 80px 24px 64px;
-  position: relative;
-  overflow: hidden;
-}
-
-.collection-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, #5e2a08 0%, #1a0900 100%);
-  opacity: 0.6;
-}
-
-.collection-hero > * {
-  position: relative;
+  padding: 52px 24px 48px;
 }
 
 .collection-hero .hero-eyebrow {

@@ -15,7 +15,15 @@
     <a class="logo" href="index.html">The Adventures of <span>Guluth</span></a>
   </header>
 
-  <!-- HERO -->
+  <!-- HERO SLIDESHOW -->
+  <div class="hero-slideshow" aria-hidden="true">
+    <div class="hero-slide active" style="background-image:url('https://res.cloudinary.com/dikkdclum/image/upload/guluth/hero-guardian.png')" data-kb="zoom-in-left"></div>
+    <div class="hero-slide" style="background-image:url('https://res.cloudinary.com/dikkdclum/image/upload/guluth/hero-city-of-cheese.png')" data-kb="zoom-in-right"></div>
+    <div class="hero-slide" style="background-image:url('https://res.cloudinary.com/dikkdclum/image/upload/guluth/hero-radagatcha.png')" data-kb="zoom-in-center"></div>
+    <div class="hero-slide" style="background-image:url('https://res.cloudinary.com/dikkdclum/image/upload/guluth/hero-night-watch.png')" data-kb="zoom-in-left"></div>
+  </div>
+
+  <!-- HERO TEXT (below the strip for clean readability) -->
   <section class="collection-hero">
     <p class="hero-eyebrow">A Collection of Stories</p>
     <h1>The Adventures<br>of Guluth</h1>
@@ -56,6 +64,22 @@
   <footer class="site-footer">
     &copy; The Adventures of Guluth &mdash; Stories told with love.
   </footer>
+
+  <script>
+    (function () {
+      const slides = document.querySelectorAll('.hero-slide');
+      let current = 0;
+      const INTERVAL = 5500;
+
+      function advance() {
+        slides[current].classList.remove('active');
+        current = (current + 1) % slides.length;
+        slides[current].classList.add('active');
+      }
+
+      setInterval(advance, INTERVAL);
+    })();
+  </script>
 
 </body>
 </html>

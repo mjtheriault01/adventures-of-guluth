@@ -1,7 +1,6 @@
 (function () {
   'use strict';
 
-  // Wrap any content element in a .book-page > .book-page-inner shell
   function makePage(content) {
     var page  = document.createElement('div');
     page.className = 'book-page';
@@ -20,7 +19,7 @@
     // ---- BUILD PAGES ------------------------------------------------
     var pages = [];
 
-    // Page 0: Cover (hero image + hint)
+    // Cover: hero image fills the fixed viewport
     var coverPage = document.createElement('div');
     coverPage.className = 'book-page book-page--cover';
     coverPage.appendChild(hero.cloneNode(true));
@@ -30,15 +29,14 @@
     coverPage.appendChild(hint);
     pages.push(coverPage);
 
-    // Content pages: each <p> inside .story-section = its own page
-    // (eliminates any need to scroll); other blocks stay as one page each
+    // One page per <p> inside story-sections — guarantees no page overflows.
+    // Other blocks (story-image, dads-question, story-end) get one page each.
     Array.from(article.children).forEach(function (block) {
       if (block.classList.contains('story-section')) {
         Array.from(block.querySelectorAll('p')).forEach(function (para) {
           pages.push(makePage(para));
         });
       } else {
-        // .story-image, .dads-question, .story-end → single page
         pages.push(makePage(block));
       }
     });
@@ -79,7 +77,7 @@
     stage.appendChild(wrapper);
     stage.appendChild(bookFooter);
 
-    // ---- MODE BAR (Book / Scroll toggle) ----------------------------
+    // ---- MODE BAR ---------------------------------------------------
     var modeBar = document.createElement('div');
     modeBar.className = 'reading-mode-bar';
     modeBar.innerHTML =
@@ -88,13 +86,11 @@
         '<button data-mode="scroll">&#9776;&#160;Scroll</button>' +
       '</div>';
 
-    // Insert: modeBar then stage, both before the original hero
     hero.parentNode.insertBefore(modeBar, hero);
     hero.parentNode.insertBefore(stage, hero);
-    hero.hidden     = true;
-    article.hidden  = true;
+    hero.hidden    = true;
+    article.hidden = true;
 
-    // Mode switching
     modeBar.addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-mode]');
       if (!btn) return;
@@ -114,8 +110,8 @@
       }
     });
 
-    // ---- NAVIGATION STATE ------------------------------------------
-    var current      = 0;
+    // ---- NAVIGATION -------------------------------------------------
+    var current       = 0;
     var transitioning = false;
     var transitionTimer;
 
@@ -123,14 +119,6 @@
       counter.textContent = (current + 1) + ' of ' + total;
       prevBtn.disabled = (current === 0);
       nextBtn.disabled = (current === total - 1);
-    }
-
-    function finishTransition(oldPage, newPage, enterClass) {
-      clearTimeout(transitionTimer);
-      newPage.classList.remove('book-transitioning', enterClass);
-      oldPage.classList.remove('active');
-      newPage.classList.add('active');
-      transitioning = false;
     }
 
     function goToPage(idx, direction) {
@@ -141,21 +129,23 @@
       var oldPage    = pages[current];
       var newPage    = pages[idx];
 
-      // Slide new page in as an absolute overlay on top of the still-visible old
-      // page — avoids the flash that comes from toggling display:none/block
-      newPage.classList.add('book-transitioning', enterClass);
-      newPage.addEventListener('animationend', function () {
-        finishTransition(oldPage, newPage, enterClass);
-      }, { once: true });
+      // New page slides in at z-index:2 while old stays fully visible at z-index:1.
+      // The viewport has a fixed height so the surrounding layout never reflows.
+      newPage.classList.add('active', enterClass);
 
-      // Safety fallback: complete transition even if animationend never fires
-      transitionTimer = setTimeout(function () {
-        finishTransition(oldPage, newPage, enterClass);
-      }, 450);
+      function done() {
+        clearTimeout(transitionTimer);
+        oldPage.classList.remove('active');   // now hidden (opacity:0)
+        newPage.classList.remove(enterClass); // drops back to z-index:1
+        transitioning = false;
+      }
+
+      newPage.addEventListener('animationend', done, { once: true });
+      // Fallback: complete even if animationend never fires (reduced-motion etc.)
+      transitionTimer = setTimeout(done, 450);
 
       current = idx;
       updateUI();
-      stage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       if (typeof stopReading === 'function') stopReading();
     }
 
@@ -166,7 +156,7 @@
     prevBtn.addEventListener('click', function () { goToPage(current - 1, 'prev'); });
     nextBtn.addEventListener('click', function () { goToPage(current + 1, 'next'); });
 
-    // Swipe support
+    // Swipe
     var touchStartX = 0;
     viewport.addEventListener('touchstart', function (e) {
       touchStartX = e.changedTouches[0].clientX;
@@ -178,13 +168,12 @@
       }
     }, { passive: true });
 
-    // Keyboard support
+    // Keyboard
     document.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') goToPage(current + 1, 'next');
       if (e.key === 'ArrowLeft')  goToPage(current - 1, 'prev');
     });
 
-    // Expose current page so main.js read-aloud narrates only this page
     window.getCurrentBookPage = function () { return pages[current]; };
   });
 })();

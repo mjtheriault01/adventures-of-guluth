@@ -15,6 +15,9 @@
   --purple: #7c4fa0;
   --purple-light: #e8d8f5;
   --shadow: rgba(62, 32, 8, 0.15);
+  /* Fixed book viewport height — desktop default.
+     Never changes on page turn, so nothing below it ever moves. */
+  --book-h: min(72vh, 560px);
 }
 
 * {
@@ -543,10 +546,10 @@ body {
   color: var(--brown-dark);
 }
 
-/* ---- Dark reading-room stage ---- */
+/* ---- Reading stage ---- */
 .book-stage {
   background: #160d04;
-  padding: 40px 0 24px;
+  padding: 36px 0 24px;
 }
 
 .book-wrapper {
@@ -559,87 +562,95 @@ body {
   padding: 0 12px;
 }
 
-/* position:relative lets the transition overlay work correctly */
+/* THE KEY FIX: fixed height + overflow:hidden means the surrounding page
+   layout NEVER reflows when switching pages. No more jumps. */
 .book-viewport {
   flex: 1;
   min-width: 0;
   max-width: 700px;
+  height: var(--book-h);
   position: relative;
-}
-
-/* ---- Book page ---- */
-.book-page {
-  display: none;
-  background: var(--cream);
+  overflow: hidden;
   border-radius: 2px 10px 10px 2px;
+  border-left: 5px solid #b89460;
+  background: var(--cream);
   box-shadow:
     -5px 0 14px rgba(0, 0, 0, 0.45),
     0 10px 44px rgba(0, 0, 0, 0.55);
-  border-left: 5px solid #b89460;
-  overflow: hidden;
-  min-height: 320px;
 }
 
-/* No animation here — the page is already fully visible at end of transition */
-.book-page.active {
-  display: block;
-}
-
-/* NEW PAGE slides in as an absolute overlay on top of the still-visible old page.
-   This eliminates the white flash caused by toggling display:none/block. */
-.book-page.book-transitioning {
-  display: block;
+/* ---- Pages: absolutely stacked, only opacity/z-index changes ---- */
+.book-page {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 2;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--cream);
   overflow: hidden;
 }
 
+.book-page.active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+/* Entering page rides in on top (z-index 2); old page stays visible at z-index 1 */
 .book-page.book-enter-right {
-  animation: book-enter-right 0.32s ease forwards;
+  z-index: 2;
+  animation: book-enter-right 0.3s ease forwards;
 }
 
 .book-page.book-enter-left {
-  animation: book-enter-left 0.32s ease forwards;
+  z-index: 2;
+  animation: book-enter-left 0.3s ease forwards;
 }
 
 @keyframes book-enter-right {
-  from { opacity: 0; transform: translateX(32px); }
+  from { opacity: 0; transform: translateX(28px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes book-enter-left {
-  from { opacity: 0; transform: translateX(-32px); }
+  from { opacity: 0; transform: translateX(-28px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* ---- Cover page ---- */
+/* ---- Cover page: image fills the fixed viewport ---- */
 .book-page--cover .story-hero {
   display: block;
+  height: 100%;
 }
 
 .book-page--cover .story-hero img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
 .book-cover-hint {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
   text-align: center;
   padding: 11px 16px;
-  background: rgba(22, 13, 4, 0.45);
-  color: rgba(253, 246, 227, 0.6);
+  background: rgba(22, 13, 4, 0.5);
+  color: rgba(253, 246, 227, 0.65);
   font-family: 'Lato', sans-serif;
   font-size: 0.78rem;
   letter-spacing: 0.07em;
 }
 
-/* ---- Content pages (text, image, question, end) ---- */
+/* ---- Content pages: fill height, center content ---- */
 .book-page-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 48px 56px;
+  box-sizing: border-box;
 }
 
-/* Slightly larger text — each page has just one paragraph */
 .book-page-inner > p,
 .book-page-inner .story-section p {
   font-size: 1.15rem;
@@ -647,6 +658,7 @@ body {
   margin-bottom: 0;
 }
 
+/* Images constrained to fit inside the fixed viewport — no overflow */
 .book-page-inner .story-image {
   margin: 0;
   text-align: center;
@@ -654,9 +666,17 @@ body {
 
 .book-page-inner .story-image img {
   max-width: 100%;
+  max-height: calc(var(--book-h) - 96px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(62, 32, 8, 0.2);
   border: 3px solid var(--parchment);
+}
+
+.book-page-inner .dads-question {
+  margin: 0;
 }
 
 .book-page-inner .story-end {
@@ -714,64 +734,29 @@ body {
 }
 
 /* ============================================
-   MOBILE: full-screen reading app layout
+   MOBILE: override --book-h to fill the screen
    ============================================ */
 @media (max-width: 640px) {
-  /* Stage fills the viewport below the header + mode bar (~120px combined) */
+  :root {
+    --book-h: calc(100svh - 150px);
+  }
+
   .book-stage {
-    padding: 0;
-    min-height: calc(100svh - 120px);
-    display: flex;
-    flex-direction: column;
+    padding: 12px 0 16px;
   }
 
   .book-wrapper {
-    flex: 1;
-    gap: 0;
-    padding: 0 4px;
+    gap: 8px;
+    padding: 0 6px;
   }
 
-  /* Viewport stretches to full available height */
-  .book-viewport {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-self: stretch;
-  }
-
-  /* Active page fills the viewport column */
-  .book-page.active {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: unset;
-  }
-
-  /* Transitioning overlay also fills full height */
-  .book-page.book-transitioning {
-    bottom: 0;
-  }
-
-  /* Cover page: natural height, no flex stretch */
-  .book-page--cover.active {
-    display: block;
-    flex: none;
-    min-height: unset;
-  }
-
-  /* Inner content fills page height and centers vertically */
   .book-page-inner {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 36px 24px;
+    padding: 32px 22px;
   }
 
-  /* Larger, easy-to-read font for phone */
   .book-page-inner > p,
   .book-page-inner .story-section p {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     line-height: 2.1;
   }
 
@@ -779,8 +764,6 @@ body {
     width: 44px;
     height: 44px;
     font-size: 1.7rem;
-    align-self: center;
-    flex-shrink: 0;
   }
 
   .book-footer {

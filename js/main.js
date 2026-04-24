@@ -4,7 +4,7 @@
    ============================================ */
 
 // ---- TRANSLATIONS ----
-const translations = {
+const translations = window.STORY_TRANSLATIONS || {
   en: {
     storyLabel: "Story 1",
     storyTitle: "The Mouse of This House",

@@ -508,13 +508,47 @@ body {
    STORYBOOK MODE
    ============================================ */
 
-/* Dark "reading room" that surrounds the book */
-.book-stage {
-  background: #160d04;
-  padding: 40px 0 28px;
+/* Book / Scroll mode toggle bar */
+.reading-mode-bar {
+  background: var(--brown-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Flex row: prev arrow · page · next arrow */
+.mode-toggle {
+  display: flex;
+  border: 2px solid var(--parchment);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.mode-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--parchment);
+  padding: 5px 18px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mode-toggle button.active {
+  background: var(--parchment);
+  color: var(--brown-dark);
+}
+
+/* ---- Dark reading-room stage ---- */
+.book-stage {
+  background: #160d04;
+  padding: 40px 0 24px;
+}
+
 .book-wrapper {
   display: flex;
   align-items: center;
@@ -525,14 +559,15 @@ body {
   padding: 0 12px;
 }
 
-/* Holds the stack of pages (one visible at a time) */
+/* position:relative lets the transition overlay work correctly */
 .book-viewport {
   flex: 1;
   min-width: 0;
   max-width: 700px;
+  position: relative;
 }
 
-/* Individual book page */
+/* ---- Book page ---- */
 .book-page {
   display: none;
   background: var(--cream);
@@ -542,40 +577,43 @@ body {
     0 10px 44px rgba(0, 0, 0, 0.55);
   border-left: 5px solid #b89460;
   overflow: hidden;
-  min-height: 280px;
+  min-height: 320px;
 }
 
+/* No animation here — the page is already fully visible at end of transition */
 .book-page.active {
   display: block;
-  animation: book-fade-in 0.3s ease forwards;
+}
+
+/* NEW PAGE slides in as an absolute overlay on top of the still-visible old page.
+   This eliminates the white flash caused by toggling display:none/block. */
+.book-page.book-transitioning {
+  display: block;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 2;
+  overflow: hidden;
 }
 
 .book-page.book-enter-right {
-  display: block;
   animation: book-enter-right 0.32s ease forwards;
 }
 
 .book-page.book-enter-left {
-  display: block;
   animation: book-enter-left 0.32s ease forwards;
 }
 
-@keyframes book-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 @keyframes book-enter-right {
-  from { opacity: 0; transform: translateX(30px); }
+  from { opacity: 0; transform: translateX(32px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes book-enter-left {
-  from { opacity: 0; transform: translateX(-30px); }
+  from { opacity: 0; transform: translateX(-32px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* Cover page: hero image fills the page, no text padding */
+/* ---- Cover page ---- */
 .book-page--cover .story-hero {
   display: block;
 }
@@ -586,7 +624,6 @@ body {
   display: block;
 }
 
-/* Small hint at the bottom of the cover page */
 .book-cover-hint {
   text-align: center;
   padding: 11px 16px;
@@ -597,26 +634,38 @@ body {
   letter-spacing: 0.07em;
 }
 
-/* Padded area for text/image/question content pages */
+/* ---- Content pages (text, image, question, end) ---- */
 .book-page-inner {
-  padding: 44px 52px;
+  padding: 48px 56px;
 }
 
-/* Tighten spacing slightly inside the book */
-.book-page-inner .story-section {
-  margin-bottom: 24px;
+/* Slightly larger text — each page has just one paragraph */
+.book-page-inner > p,
+.book-page-inner .story-section p {
+  font-size: 1.15rem;
+  line-height: 2;
+  margin-bottom: 0;
 }
 
 .book-page-inner .story-image {
-  margin: 22px 0;
+  margin: 0;
+  text-align: center;
+}
+
+.book-page-inner .story-image img {
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(62, 32, 8, 0.2);
+  border: 3px solid var(--parchment);
 }
 
 .book-page-inner .story-end {
-  margin-top: 28px;
-  padding-top: 28px;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
-/* Navigation arrows */
+/* ---- Navigation arrows ---- */
 .book-nav {
   background: rgba(253, 246, 227, 0.08);
   border: 2px solid rgba(253, 246, 227, 0.2);
@@ -631,7 +680,7 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  padding-bottom: 2px; /* optical center ‹ › */
+  padding-bottom: 2px;
   transition: background 0.2s, border-color 0.2s, transform 0.1s;
 }
 
@@ -650,7 +699,7 @@ body {
   cursor: default;
 }
 
-/* Page counter */
+/* ---- Page counter ---- */
 .book-footer {
   text-align: center;
   margin-top: 14px;
@@ -664,23 +713,77 @@ body {
   letter-spacing: 0.06em;
 }
 
+/* ============================================
+   MOBILE: full-screen reading app layout
+   ============================================ */
 @media (max-width: 640px) {
+  /* Stage fills the viewport below the header + mode bar (~120px combined) */
   .book-stage {
-    padding: 20px 0 16px;
+    padding: 0;
+    min-height: calc(100svh - 120px);
+    display: flex;
+    flex-direction: column;
   }
 
   .book-wrapper {
-    gap: 10px;
-    padding: 0 8px;
+    flex: 1;
+    gap: 0;
+    padding: 0 4px;
+  }
+
+  /* Viewport stretches to full available height */
+  .book-viewport {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  /* Active page fills the viewport column */
+  .book-page.active {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: unset;
+  }
+
+  /* Transitioning overlay also fills full height */
+  .book-page.book-transitioning {
+    bottom: 0;
+  }
+
+  /* Cover page: natural height, no flex stretch */
+  .book-page--cover.active {
+    display: block;
+    flex: none;
+    min-height: unset;
+  }
+
+  /* Inner content fills page height and centers vertically */
+  .book-page-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 36px 24px;
+  }
+
+  /* Larger, easy-to-read font for phone */
+  .book-page-inner > p,
+  .book-page-inner .story-section p {
+    font-size: 1.3rem;
+    line-height: 2.1;
   }
 
   .book-nav {
-    width: 40px;
-    height: 40px;
-    font-size: 1.6rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.7rem;
+    align-self: center;
+    flex-shrink: 0;
   }
 
-  .book-page-inner {
-    padding: 28px 22px 32px;
+  .book-footer {
+    padding-bottom: 10px;
   }
 }

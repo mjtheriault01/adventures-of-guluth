@@ -1,15 +1,26 @@
 (function () {
   'use strict';
 
+  // Wrap any content element in a .book-page > .book-page-inner shell
+  function makePage(content) {
+    var page  = document.createElement('div');
+    page.className = 'book-page';
+    var inner = document.createElement('div');
+    inner.className = 'book-page-inner';
+    inner.appendChild(content.cloneNode(true));
+    page.appendChild(inner);
+    return page;
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     var hero    = document.querySelector('.story-hero');
     var article = document.querySelector('.story-container');
     if (!hero || !article) return;
 
-    // ---- BUILD PAGES ----
+    // ---- BUILD PAGES ------------------------------------------------
     var pages = [];
 
-    // Page 0: Cover — clone the hero image + title overlay
+    // Page 0: Cover (hero image + hint)
     var coverPage = document.createElement('div');
     coverPage.className = 'book-page book-page--cover';
     coverPage.appendChild(hero.cloneNode(true));
@@ -19,20 +30,22 @@
     coverPage.appendChild(hint);
     pages.push(coverPage);
 
-    // Pages 1+: Each direct child of the article = one book page
+    // Content pages: each <p> inside .story-section = its own page
+    // (eliminates any need to scroll); other blocks stay as one page each
     Array.from(article.children).forEach(function (block) {
-      var page  = document.createElement('div');
-      page.className = 'book-page';
-      var inner = document.createElement('div');
-      inner.className = 'book-page-inner';
-      inner.appendChild(block.cloneNode(true));
-      page.appendChild(inner);
-      pages.push(page);
+      if (block.classList.contains('story-section')) {
+        Array.from(block.querySelectorAll('p')).forEach(function (para) {
+          pages.push(makePage(para));
+        });
+      } else {
+        // .story-image, .dads-question, .story-end → single page
+        pages.push(makePage(block));
+      }
     });
 
     var total = pages.length;
 
-    // ---- ASSEMBLE STAGE ----
+    // ---- BUILD STAGE ------------------------------------------------
     var stage = document.createElement('div');
     stage.className = 'book-stage';
 
@@ -66,56 +79,94 @@
     stage.appendChild(wrapper);
     stage.appendChild(bookFooter);
 
-    // Swap originals for the book stage
-    hero.parentNode.insertBefore(stage, hero);
-    hero.hidden  = true;
-    article.hidden = true;
+    // ---- MODE BAR (Book / Scroll toggle) ----------------------------
+    var modeBar = document.createElement('div');
+    modeBar.className = 'reading-mode-bar';
+    modeBar.innerHTML =
+      '<div class="mode-toggle">' +
+        '<button data-mode="book" class="active">&#128214;&#160;Book</button>' +
+        '<button data-mode="scroll">&#9776;&#160;Scroll</button>' +
+      '</div>';
 
-    // ---- STATE ----
-    var current = 0;
+    // Insert: modeBar then stage, both before the original hero
+    hero.parentNode.insertBefore(modeBar, hero);
+    hero.parentNode.insertBefore(stage, hero);
+    hero.hidden     = true;
+    article.hidden  = true;
+
+    // Mode switching
+    modeBar.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-mode]');
+      if (!btn) return;
+      var mode = btn.getAttribute('data-mode');
+      modeBar.querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+      });
+      if (mode === 'scroll') {
+        stage.hidden   = true;
+        hero.hidden    = false;
+        article.hidden = false;
+        if (typeof stopReading === 'function') stopReading();
+      } else {
+        stage.hidden   = false;
+        hero.hidden    = true;
+        article.hidden = true;
+      }
+    });
+
+    // ---- NAVIGATION STATE ------------------------------------------
+    var current      = 0;
+    var transitioning = false;
+    var transitionTimer;
 
     function updateUI() {
       counter.textContent = (current + 1) + ' of ' + total;
-      prevBtn.disabled = current === 0;
-      nextBtn.disabled = current === total - 1;
+      prevBtn.disabled = (current === 0);
+      nextBtn.disabled = (current === total - 1);
+    }
+
+    function finishTransition(oldPage, newPage, enterClass) {
+      clearTimeout(transitionTimer);
+      newPage.classList.remove('book-transitioning', enterClass);
+      oldPage.classList.remove('active');
+      newPage.classList.add('active');
+      transitioning = false;
     }
 
     function goToPage(idx, direction) {
-      if (idx < 0 || idx >= total) return;
+      if (idx < 0 || idx >= total || transitioning) return;
+      transitioning = true;
 
       var enterClass = direction === 'next' ? 'book-enter-right' : 'book-enter-left';
       var oldPage    = pages[current];
       var newPage    = pages[idx];
 
-      // Hide outgoing page immediately
-      oldPage.classList.remove('active');
-
-      // Slide/fade new page in
-      newPage.classList.add(enterClass);
-      newPage.addEventListener('animationend', function handler() {
-        newPage.classList.remove(enterClass);
-        newPage.classList.add('active');
-        newPage.removeEventListener('animationend', handler);
+      // Slide new page in as an absolute overlay on top of the still-visible old
+      // page — avoids the flash that comes from toggling display:none/block
+      newPage.classList.add('book-transitioning', enterClass);
+      newPage.addEventListener('animationend', function () {
+        finishTransition(oldPage, newPage, enterClass);
       }, { once: true });
+
+      // Safety fallback: complete transition even if animationend never fires
+      transitionTimer = setTimeout(function () {
+        finishTransition(oldPage, newPage, enterClass);
+      }, 450);
 
       current = idx;
       updateUI();
-
-      // Keep the stage in view on mobile after a page turn
       stage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-      // Stop any active narration when the page changes
       if (typeof stopReading === 'function') stopReading();
     }
 
-    // ---- INIT ----
+    // ---- INIT -------------------------------------------------------
     pages[0].classList.add('active');
     updateUI();
 
     prevBtn.addEventListener('click', function () { goToPage(current - 1, 'prev'); });
     nextBtn.addEventListener('click', function () { goToPage(current + 1, 'next'); });
 
-    // ---- SWIPE (touch) ----
+    // Swipe support
     var touchStartX = 0;
     viewport.addEventListener('touchstart', function (e) {
       touchStartX = e.changedTouches[0].clientX;
@@ -127,14 +178,13 @@
       }
     }, { passive: true });
 
-    // ---- KEYBOARD ----
+    // Keyboard support
     document.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') goToPage(current + 1, 'next');
       if (e.key === 'ArrowLeft')  goToPage(current - 1, 'prev');
     });
 
-    // ---- EXPOSE CURRENT PAGE FOR READ-ALOUD ----
-    // main.js checks window.getCurrentBookPage() to know which paragraphs to narrate
+    // Expose current page so main.js read-aloud narrates only this page
     window.getCurrentBookPage = function () { return pages[current]; };
   });
 })();

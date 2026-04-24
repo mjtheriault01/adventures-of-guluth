@@ -146,11 +146,28 @@ function setLanguage(lang) {
 
 // ---- READ ALOUD ----
 function getStoryText() {
+  // In book mode, read only the paragraphs on the current visible page
+  if (window.getCurrentBookPage) {
+    var page = window.getCurrentBookPage();
+    var paraEls = page.querySelectorAll('[data-para]');
+    if (paraEls.length > 0) {
+      var texts = [];
+      paraEls.forEach(function (el) {
+        var idx  = parseInt(el.getAttribute('data-para'));
+        var text = translations[currentLang].paragraphs[idx];
+        if (text) texts.push(text);
+      });
+      return texts.join(' ');
+    }
+    return '';
+  }
   return translations[currentLang].paragraphs.join(' ');
 }
 
 function startReading() {
   if (!synth) return;
+  var text = getStoryText();
+  if (!text) return; // cover page or "The End" page — nothing to narrate
   stopReading();
 
   utterance = new SpeechSynthesisUtterance(getStoryText());
